@@ -21,7 +21,7 @@ brew untap naofumi-fujii/banzai
 ## Update
 
 ```bash
-brew upgrade --cask banzai
+brew update && brew upgrade --cask banzai
 ```
 
 ## Links
