@@ -1,29 +1,29 @@
 # Homebrew Banzai
 
-[Banzai](https://github.com/naofumi-fujii/banzai) をインストールするための Homebrew タップです。
+A Homebrew tap for installing [Banzai](https://github.com/naofumi-fujii/banzai).
 
-Banzai は macOS メニューバーで動作するクリップボード履歴管理アプリです。
+Banzai is a clipboard history management app that runs in the macOS menu bar.
 
-## インストール
+## Installation
 
 ```bash
 brew tap naofumi-fujii/banzai
 brew install --cask banzai
 ```
 
-## アンインストール
+## Uninstallation
 
 ```bash
 brew uninstall --cask banzai
 brew untap naofumi-fujii/banzai
 ```
 
-## 更新
+## Update
 
 ```bash
 brew upgrade --cask banzai
 ```
 
-## リンク
+## Links
 
-- [Banzai リポジトリ](https://github.com/naofumi-fujii/banzai)
+- [Banzai Repository](https://github.com/naofumi-fujii/banzai)
