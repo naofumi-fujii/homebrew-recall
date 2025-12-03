@@ -9,6 +9,12 @@ cask "banzai" do
 
   app "Banzai.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-cr", "#{appdir}/Banzai.app"],
+                   sudo: false
+  end
+
   zap trash: [
     "~/Library/Application Support/banzai",
   ]
