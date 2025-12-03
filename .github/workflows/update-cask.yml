@@ -1,0 +1,61 @@
+name: Update Cask
+
+on:
+  schedule:
+    # 毎日UTC 0:00に実行（日本時間9:00）
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # 手動実行も可能
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get latest release from banzai repo
+        id: release
+        run: |
+          RELEASE_JSON=$(curl -s https://api.github.com/repos/naofumi-fujii/banzai/releases/latest)
+          VERSION=$(echo "$RELEASE_JSON" | jq -r '.tag_name' | sed 's/^v//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Latest version: $VERSION"
+
+      - name: Get current version
+        id: current
+        run: |
+          CURRENT=$(grep -oP 'version "\K[^"]+' Casks/banzai.rb)
+          echo "version=$CURRENT" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT"
+
+      - name: Update Cask if version changed
+        if: steps.release.outputs.version != steps.current.outputs.version
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          URL="https://github.com/naofumi-fujii/banzai/releases/download/v${VERSION}/Banzai-v${VERSION}.zip"
+
+          echo "Downloading $URL to calculate sha256..."
+          SHA256=$(curl -sL "$URL" | sha256sum | awk '{print $1}')
+          echo "SHA256: $SHA256"
+
+          # Update version
+          sed -i "s/version \".*\"/version \"$VERSION\"/" Casks/banzai.rb
+
+          # Update sha256
+          sed -i "s/sha256 \".*\"/sha256 \"$SHA256\"/" Casks/banzai.rb
+
+          echo "Updated Casks/banzai.rb:"
+          cat Casks/banzai.rb
+
+      - name: Commit and push
+        if: steps.release.outputs.version != steps.current.outputs.version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/banzai.rb
+          git commit -m "Update banzai to v${{ steps.release.outputs.version }}"
+          git push
