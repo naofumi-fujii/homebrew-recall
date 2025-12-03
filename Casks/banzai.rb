@@ -1,6 +1,6 @@
 cask "banzai" do
-  version "1.0.4"
-  sha256 "e5795672f4e286e8a6cf7936c5b0c1c63a91c7773c9d74b769a74e52f1d31039"
+  version "1.0.5"
+  sha256 "c2498e8452369a349ee00dfe1513cec0e436f27a09c55c7e073ef1a4af0f2900"
 
   url "https://github.com/naofumi-fujii/banzai/releases/download/v#{version}/Banzai-v#{version}.zip"
   name "Banzai"
