@@ -1,29 +1,29 @@
-# Homebrew Banzai
+# Homebrew Recall
 
-A Homebrew tap for installing [Banzai](https://github.com/naofumi-fujii/banzai).
+A Homebrew tap for installing [Recall](https://github.com/naofumi-fujii/recall).
 
-Banzai is a clipboard history management app that runs in the macOS menu bar.
+Recall is a clipboard history management app that runs in the macOS menu bar.
 
 ## Installation
 
 ```bash
-brew tap naofumi-fujii/banzai
-brew install --cask banzai
+brew tap naofumi-fujii/recall
+brew install --cask recall
 ```
 
 ## Uninstallation
 
 ```bash
-brew uninstall --cask banzai
-brew untap naofumi-fujii/banzai
+brew uninstall --cask recall
+brew untap naofumi-fujii/recall
 ```
 
 ## Update
 
 ```bash
-brew update && brew upgrade --cask banzai
+brew update && brew upgrade --cask recall
 ```
 
 ## Links
 
-- [Banzai Repository](https://github.com/naofumi-fujii/banzai)
+- [Recall Repository](https://github.com/naofumi-fujii/recall)
