@@ -75,7 +75,7 @@ jobs:
           git push -u origin "$BRANCH"
 
           # Create draft PR
-          gh pr create --base main -d -a 'naofumi-fujii' \
+          gh pr create --base main -a 'naofumi-fujii' \
             --title "Update recall to v${VERSION}" \
             --body "Updates recall cask to version ${VERSION}"
         env:
