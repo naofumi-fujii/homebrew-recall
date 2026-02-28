@@ -2,8 +2,7 @@ name: Update Cask
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 * * * *'  # 1時間ごとにチェック
+    # 手動実行のみ
 
 jobs:
   update:
