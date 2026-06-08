@@ -1,6 +1,6 @@
 cask "recall" do
-  version "2.0.17"
-  sha256 "b56ef955e704324fa984c8a07fcc0e034e9da54cd17fdf97dc986ce9bb0c4168"
+  version "2.0.18"
+  sha256 "f1ad9c6db734022a834512fe1447fd39d0c9e28f9898c12e12bfa422099dad57"
 
   url "https://github.com/naofumi-fujii/recall/releases/download/v#{version}/Recall-v#{version}.zip"
   name "Recall"
