@@ -1,0 +1,116 @@
+name: Add Versioned Cask
+
+on:
+  workflow_dispatch:
+    # 手動実行のみ。ロールバック先として固定したいバージョンを指定する
+    inputs:
+      version:
+        description: "Version to pin (e.g. 2.1.9)"
+        required: true
+        type: string
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate version input
+        id: version
+        env:
+          # スクリプトへの直接展開を避けて env 経由で受け取る
+          VERSION_INPUT: ${{ inputs.version }}
+        run: |
+          # 先頭の v を落として 1.2.3 形式に正規化する
+          VERSION=$(echo "$VERSION_INPUT" | sed 's/^v//')
+
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: invalid version format: $VERSION (expected e.g. 2.1.9)"
+            exit 1
+          fi
+
+          if [ -f "Casks/recall@${VERSION}.rb" ]; then
+            echo "Error: Casks/recall@${VERSION}.rb already exists"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version to pin: $VERSION"
+
+      - name: Download release asset and calculate sha256
+        id: asset
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          URL="https://github.com/naofumi-fujii/recall/releases/download/v${VERSION}/Recall-v${VERSION}.zip"
+
+          echo "Downloading $URL ..."
+          # 404 の HTML をそのまま sha256 にしないよう、ステータスコードを確認する
+          STATUS=$(curl -sL -o asset.zip -w '%{http_code}' "$URL")
+          if [ "$STATUS" != "200" ]; then
+            echo "Error: failed to download $URL (HTTP $STATUS)"
+            exit 1
+          fi
+
+          SHA256=$(sha256sum asset.zip | awk '{print $1}')
+          rm -f asset.zip
+
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA256"
+
+      - name: Generate versioned cask
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          SHA256="${{ steps.asset.outputs.sha256 }}"
+
+          # Casks/recall.rb を雛形にして token / version / sha256 を差し替え、
+          # conflicts_with を homepage の後ろに挿入する。
+          # desc や postflight, zap は本体の cask から自動で引き継がれる
+          awk -v ver="$VERSION" -v sha="$SHA256" '
+            /^cask "recall" do$/ { print "cask \"recall@" ver "\" do"; next }
+            /^  version "/       { print "  version \"" ver "\""; next }
+            /^  sha256 "/        { print "  sha256 \"" sha "\""; next }
+            /^  homepage /       { print; print ""; print "  conflicts_with cask: \"recall\""; next }
+                                 { print }
+          ' Casks/recall.rb > "Casks/recall@${VERSION}.rb"
+
+          echo "Generated Casks/recall@${VERSION}.rb:"
+          cat "Casks/recall@${VERSION}.rb"
+
+      - name: Create Pull Request
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="add-recall-v${VERSION}-cask"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+
+          git add "Casks/recall@${VERSION}.rb"
+          git commit -m "Add versioned cask for recall v${VERSION}"
+
+          git push -u origin "$BRANCH"
+
+          # コードブロックを含むのでファイル経由で渡す
+          cat > pr-body.md <<EOF
+          Adds \`recall@${VERSION}\` so this version can be installed and stays pinned across \`brew upgrade\`.
+
+          \`\`\`bash
+          brew install --cask naofumi-fujii/recall/recall@${VERSION}
+          \`\`\`
+
+          \`recall\` and \`recall@${VERSION}\` install the same \`Recall.app\`, so they cannot coexist.
+          EOF
+
+          gh pr create --base main -a 'naofumi-fujii' \
+            --title "Add versioned cask for recall v${VERSION}" \
+            --body-file pr-body.md
+
+          rm -f pr-body.md
+        env:
+          GH_TOKEN: ${{ github.token }}
