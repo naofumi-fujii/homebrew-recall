@@ -9,10 +9,8 @@ cask "recall" do
 
   app "Recall.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-cr", "#{appdir}/Recall.app"],
-                   sudo: false
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-cr", "{{appdir}}/Recall.app"]
   end
 
   zap trash: [
