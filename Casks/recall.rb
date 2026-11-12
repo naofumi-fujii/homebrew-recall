@@ -13,6 +13,8 @@ cask "recall" do
     run "/usr/bin/xattr", args: ["-cr", "{{appdir}}/Recall.app"]
   end
 
+  uninstall quit: "com.recall.clipboard"
+
   zap trash: [
     "~/Library/Application Support/recall",
   ]
